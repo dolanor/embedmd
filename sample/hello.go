@@ -10,5 +10,10 @@ import (
 )
 
 func main() {
+	// START sample
 	fmt.Println("Hello, there, it is", time.Now())
+	for {
+		fmt.Println("hehehehe")
+	}
+	// END sample
 }

@@ -41,8 +41,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/campoy/embedmd/embedmd"
 	"github.com/pmezard/go-difflib/difflib"
+	"github.com/rakyll/embedmd/embedmd"
 )
 
 // modified while building by -ldflags.

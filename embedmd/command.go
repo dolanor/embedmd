@@ -21,7 +21,7 @@ import (
 
 type command struct {
 	path, lang string
-	start, end *string
+	sample     string
 }
 
 func parseCommand(s string) (*command, error) {
@@ -52,9 +52,9 @@ func parseCommand(s string) (*command, error) {
 
 	switch {
 	case len(args) == 1:
-		cmd.start = &args[0]
+		cmd.sample = args[0]
 	case len(args) == 2:
-		cmd.start, cmd.end = &args[0], &args[1]
+		cmd.sample = args[1]
 	case len(args) > 2:
 		return nil, errors.New("too many arguments")
 	}

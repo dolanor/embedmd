@@ -53,9 +53,12 @@
 package embedmd
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"regexp"
+	"strings"
 )
 
 // Process reads markdown from the given io.Reader searching for an embedmd
@@ -94,8 +97,7 @@ func (e *embedder) runCommand(w io.Writer, cmd *command) error {
 	if err != nil {
 		return fmt.Errorf("could not read %s: %v", cmd.path, err)
 	}
-
-	b, err = extract(b, cmd.start, cmd.end)
+	b, err = extract(b, cmd.sample)
 	if err != nil {
 		return fmt.Errorf("could not extract content from %s: %v", cmd.path, err)
 	}
@@ -104,22 +106,27 @@ func (e *embedder) runCommand(w io.Writer, cmd *command) error {
 		b = append(b, '\n')
 	}
 
-	fmt.Fprintln(w, "```"+cmd.lang)
-	w.Write(b)
+	fmt.Fprintln(w, "```go")
+	scanner := bufio.NewScanner(bytes.NewBuffer(b))
+	for scanner.Scan() {
+		t := scanner.Text()
+		if strings.Contains(t, "START") {
+			continue
+		}
+		if strings.Contains(t, "END") {
+			continue
+		}
+		fmt.Fprintln(w, scanner.Text())
+	}
 	fmt.Fprintln(w, "```")
 	return nil
 }
 
-func extract(b []byte, start, end *string) ([]byte, error) {
-	if start == nil && end == nil {
-		return b, nil
-	}
-
+func extract(b []byte, sample string) ([]byte, error) {
+	start := "START " + sample
+	end := "END " + sample
 	match := func(s string) ([]int, error) {
-		if len(s) <= 2 || s[0] != '/' || s[len(s)-1] != '/' {
-			return nil, fmt.Errorf("missing slashes (/) around %q", s)
-		}
-		re, err := regexp.CompilePOSIX(s[1 : len(s)-1])
+		re, err := regexp.CompilePOSIX(s)
 		if err != nil {
 			return nil, err
 		}
@@ -130,24 +137,17 @@ func extract(b []byte, start, end *string) ([]byte, error) {
 		return loc, nil
 	}
 
-	if *start != "" {
-		loc, err := match(*start)
-		if err != nil {
-			return nil, err
-		}
-		if end == nil {
-			return b[loc[0]:loc[1]], nil
-		}
-		b = b[loc[0]:]
+	loc, err := match(start)
+	if err != nil {
+		return nil, err
 	}
+	b = b[loc[0]:]
 
-	if *end != "$" {
-		loc, err := match(*end)
-		if err != nil {
-			return nil, err
-		}
-		b = b[:loc[1]]
+	loc, err = match(end)
+	if err != nil {
+		return nil, err
 	}
+	b = b[:loc[1]]
 
 	return b, nil
 }
