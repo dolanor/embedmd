@@ -26,6 +26,10 @@ func main() {
 		// START test
 		fmt.Println("hello, test")
 		// END test
+
+		// START a
+		fmt.Println()
+		// END a
 }
 `
 
@@ -39,6 +43,11 @@ func TestExtract(t *testing.T) {
 			name:   "start and end comment",
 			sample: "test",
 			out:    "START test\n\t\tfmt.Println(\"hello, test\")\n\t\t// END test",
+		},
+		{
+			name:   "a",
+			sample: "a",
+			out:    "START a\n\t\tfmt.Println()\n\t\t// END a",
 		},
 	}
 

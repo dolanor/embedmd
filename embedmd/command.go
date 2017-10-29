@@ -15,7 +15,6 @@ package embedmd
 
 import (
 	"errors"
-	"path/filepath"
 	"strings"
 )
 
@@ -40,22 +39,11 @@ func parseCommand(s string) (*command, error) {
 
 	cmd := &command{path: args[0]}
 	args = args[1:]
-	if len(args) > 0 && args[0][0] != '/' {
-		cmd.lang, args = args[0], args[1:]
-	} else {
-		ext := filepath.Ext(cmd.path[1:])
-		if len(ext) == 0 {
-			return nil, errors.New("language is required when file has no extension")
-		}
-		cmd.lang = ext[1:]
-	}
 
 	switch {
 	case len(args) == 1:
 		cmd.sample = args[0]
-	case len(args) == 2:
-		cmd.sample = args[1]
-	case len(args) > 2:
+	case len(args) > 1:
 		return nil, errors.New("too many arguments")
 	}
 

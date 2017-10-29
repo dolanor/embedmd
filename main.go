@@ -136,10 +136,6 @@ func readFile(path string) ([]byte, error) {
 }
 
 func processFile(path string, rewrite, doDiff bool) (foundDiff bool, err error) {
-	if filepath.Ext(path) != ".md" {
-		return false, fmt.Errorf("not a markdown file")
-	}
-
 	f, err := openFile(path)
 	if err != nil {
 		return false, err
