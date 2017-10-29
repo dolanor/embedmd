@@ -108,6 +108,7 @@ func (e *embedder) runCommand(w io.Writer, cmd *command) error {
 
 	fmt.Fprintln(w, "```go")
 	scanner := bufio.NewScanner(bytes.NewBuffer(b))
+	var code []string
 	for scanner.Scan() {
 		t := scanner.Text()
 		if strings.Contains(t, "START") {
@@ -116,10 +117,39 @@ func (e *embedder) runCommand(w io.Writer, cmd *command) error {
 		if strings.Contains(t, "END") {
 			continue
 		}
-		fmt.Fprintln(w, scanner.Text())
+		code = append(code, scanner.Text())
+	}
+	for _, c := range normalize(code) {
+		fmt.Fprintln(w, c)
 	}
 	fmt.Fprintln(w, "```")
 	return nil
+}
+
+func normalize(s []string) []string {
+	indent := -1
+loop:
+	for i := 0; ; i++ {
+		for _, line := range s {
+			if line == "" {
+				continue
+			}
+			if strings.LastIndex(line, "\t") != i {
+				break loop
+			}
+			indent = i
+		}
+	}
+	if indent == -1 {
+		return s
+	}
+	for i, line := range s {
+		if line == "" {
+			continue
+		}
+		s[i] = line[indent+1:]
+	}
+	return s
 }
 
 func extract(b []byte, sample string) ([]byte, error) {
